@@ -88,3 +88,31 @@ def filterBoxes(boxes: list[list[int]]) -> list[list[int]]:
                 if neighbors >= neighbour_filter:
                     filteredBoxes[i][j] = True
     return filteredBoxes
+
+def createControlWindow() -> None:
+    global color_tolerance, use_hsv, show_mask, box_size, box_tolerance, neighbour_filter, big_box
+    cv.namedWindow('Controls', 0)
+    cv.createTrackbar('Color Tolerance', 'Controls', int(color_tolerance*10), 50, lambda x: None)
+    cv.createTrackbar('Use HSV', 'Controls', 1 if use_hsv else 0, 1, lambda x: None)
+    cv.createTrackbar('Show Mask', 'Controls', 1 if show_mask else 0, 1, lambda x: None)
+    cv.createTrackbar('Box Size', 'Controls', box_size, 100, lambda x: None)
+    cv.createTrackbar('Box Tolerance', 'Controls', int(box_tolerance*100), 100, lambda x: None)
+    cv.createTrackbar('Neighbour Filter', 'Controls', neighbour_filter, 4, lambda x: None)
+    cv.createTrackbar('Big Box', 'Controls', 1 if big_box else 0, 1, lambda x: None)
+
+def handleControlWindow() -> bool:
+    global color_tolerance, use_hsv, show_mask, box_size, box_tolerance, neighbour_filter, big_box
+    handleControlWindow.previous_color_tolerance = color_tolerance
+    handleControlWindow.previous_use_hsv = use_hsv
+    colorChanged = False
+    color_tolerance = cv.getTrackbarPos('Color Tolerance', 'Controls') / 10
+    use_hsv = cv.getTrackbarPos('Use HSV', 'Controls') == 1
+    show_mask = cv.getTrackbarPos('Show Mask', 'Controls') == 1
+    box_size = cv.getTrackbarPos('Box Size', 'Controls')
+    if box_size == 0: box_size = 1
+    box_tolerance = cv.getTrackbarPos('Box Tolerance', 'Controls') / 100
+    neighbour_filter = cv.getTrackbarPos('Neighbour Filter', 'Controls')
+    big_box = cv.getTrackbarPos('Big Box', 'Controls') == 1
+    if use_hsv != handleControlWindow.previous_use_hsv or color_tolerance != handleControlWindow.previous_color_tolerance:
+        colorChanged = True
+    return colorChanged
