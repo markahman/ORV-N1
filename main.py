@@ -88,3 +88,14 @@ def filterBoxes(boxes: list[list[int]]) -> list[list[int]]:
                 if neighbors >= neighbour_filter:
                     filteredBoxes[i][j] = True
     return filteredBoxes
+
+def createControlWindow() -> None:
+    global color_tolerance, use_hsv, show_mask, box_size, box_tolerance, neighbour_filter, big_box
+    cv.namedWindow('Controls', 0)
+    cv.createTrackbar('Color Tolerance', 'Controls', int(color_tolerance*10), 50, lambda x: None)
+    cv.createTrackbar('Use HSV', 'Controls', 1 if use_hsv else 0, 1, lambda x: None)
+    cv.createTrackbar('Show Mask', 'Controls', 1 if show_mask else 0, 1, lambda x: None)
+    cv.createTrackbar('Box Size', 'Controls', box_size, 100, lambda x: None)
+    cv.createTrackbar('Box Tolerance', 'Controls', int(box_tolerance*100), 100, lambda x: None)
+    cv.createTrackbar('Neighbour Filter', 'Controls', neighbour_filter, 4, lambda x: None)
+    cv.createTrackbar('Big Box', 'Controls', 1 if big_box else 0, 1, lambda x: None)
