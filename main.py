@@ -116,3 +116,94 @@ def handleControlWindow() -> bool:
     if use_hsv != handleControlWindow.previous_use_hsv or color_tolerance != handleControlWindow.previous_color_tolerance:
         colorChanged = True
     return colorChanged
+
+def findBoundingBoxes(boxes: list[list[bool]]) -> list[tuple[int, int, int, int]]:
+    numRows = len(boxes)
+    numCols = len(boxes[0]) if numRows > 0 else 0
+    mask = np.zeros((numRows, numCols), np.uint8)
+    for i in range(numRows):
+        for j in range(numCols):
+            if boxes[i][j]:
+                mask[i, j] = 255
+    boundingBoxes = []
+    for i in range(numRows):
+        for j in range(numCols):
+            if mask[i, j] == 255:
+                _, _, _, rect = cv.floodFill(mask, None, (j, i), 0)
+                min_j, min_i, width, height = rect
+                max_j = min_j + width - 1
+                max_i = min_i + height - 1
+                boundingBoxes.append((min_i, min_j, max_i, max_j))
+    return boundingBoxes
+
+def main() -> None:
+    global use_hsv, show_mask, box_size, box_tolerance, big_box
+    cap = cv.VideoCapture(0)
+    if not cap.isOpened():
+        print("Kamera ni na voljo.")
+        return
+    
+    skinArea = chooseSkinArea(cap)
+    if skinArea is None:
+        print("Napaka pri izbiri območja kože.")
+        return
+    
+    startingFrame, topLeft, bottomRight = skinArea
+    lowerBoundSkin, upperBoundSkin = doloci_barvo_koze(startingFrame, topLeft, bottomRight)
+    
+    createControlWindow()
+    prev_time = time.time()
+    while True:
+        if handleControlWindow():
+            lowerBoundSkin, upperBoundSkin = doloci_barvo_koze(startingFrame, topLeft, bottomRight)
+
+
+        ret, frame = cap.read()
+        if not ret:
+            break
+        frame = zmanjsaj_sliko(frame, WINDOW_WIDTH, WINDOW_HEIGHT)
+
+
+        boxes = obdelaj_sliko_s_skatlami(frame, box_size, box_size, (lowerBoundSkin, upperBoundSkin))
+        boxes = filterBoxes(boxes)
+        if not big_box:
+            for i, row in enumerate(boxes):
+                for j, isSkin in enumerate(row):
+                    if isSkin:
+                        x0, y0 = j * box_size, i * box_size
+                        x1, y1 = x0 + box_size, y0 + box_size
+                        cv.rectangle(frame, (x0, y0), (x1, y1), (0, 255, 0), 2)
+        else:
+            boundingBoxes = findBoundingBoxes(boxes)
+            for min_i, min_j, max_i, max_j in boundingBoxes:
+                x0, y0 = min_j * box_size, min_i * box_size
+                x1, y1 = (max_j + 1) * box_size, (max_i + 1) * box_size
+                cv.rectangle(frame, (x0, y0), (x1, y1), (255, 0, 255), 2)
+
+        if show_mask:
+            convertedFrame: np.ndarray
+            if use_hsv:
+                convertedFrame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
+            else:
+                convertedFrame = frame
+            mask = cv.inRange(convertedFrame, lowerBoundSkin, upperBoundSkin)
+            tintedFrame = frame.copy()
+            tintedFrame[mask > 0] = (0, 255, 0)
+            frame = cv.addWeighted(frame, 0.7, tintedFrame, 0.3, 0)
+           
+
+        current_time = time.time()
+        fps = 1 / (current_time - prev_time)
+        prev_time = current_time
+        cv.putText(frame, f'FPS: {fps:.2f}', (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv.LINE_AA)
+
+
+        cv.imshow('Camera Capture', frame)
+        if cv.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv.destroyAllWindows()
+
+if __name__ == '__main__':
+    main()
