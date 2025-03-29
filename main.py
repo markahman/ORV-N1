@@ -117,6 +117,25 @@ def handleControlWindow() -> bool:
         colorChanged = True
     return colorChanged
 
+def findBoundingBoxes(boxes: list[list[bool]]) -> list[tuple[int, int, int, int]]:
+    numRows = len(boxes)
+    numCols = len(boxes[0]) if numRows > 0 else 0
+    mask = np.zeros((numRows, numCols), np.uint8)
+    for i in range(numRows):
+        for j in range(numCols):
+            if boxes[i][j]:
+                mask[i, j] = 255
+    boundingBoxes = []
+    for i in range(numRows):
+        for j in range(numCols):
+            if mask[i, j] == 255:
+                _, _, _, rect = cv.floodFill(mask, None, (j, i), 0)
+                min_j, min_i, width, height = rect
+                max_j = min_j + width - 1
+                max_i = min_i + height - 1
+                boundingBoxes.append((min_i, min_j, max_i, max_j))
+    return boundingBoxes
+
 def main() -> None:
     global use_hsv, show_mask, box_size, box_tolerance, big_box
     cap = cv.VideoCapture(0)
