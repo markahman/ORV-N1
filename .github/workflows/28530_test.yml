@@ -40,14 +40,19 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: napaka
+        continue-on-error: true #add this line
 
       - name: Check napaka.txt
         run: |
-          if [ -s napaka.txt ]; then
-            echo "napaka.txt contains errors. Cancelling test run."
-            exit 1
+          if [ -f napaka.txt ]; then
+            if [ -s napaka.txt ]; then
+              echo "napaka.txt contains errors. Cancelling test run."
+              exit 1
+            else
+              echo "napaka.txt is empty. Proceeding with tests."
+            fi
           else
-            echo "napaka.txt is empty. Proceeding with tests."
+            echo "napaka.txt artifact not found. Proceeding with tests." #add this line
           fi
 
       - name: Set up Python
@@ -62,6 +67,6 @@ jobs:
         run: python -m unittest discover tests #adjust to your testing framework
         env:
           TEST_VAR: "test_value"
-    strategy: #move strategy here.
+    strategy: #correct location of strategy.
       matrix:
         os: [ubuntu-latest, windows-latest] #example matrix
