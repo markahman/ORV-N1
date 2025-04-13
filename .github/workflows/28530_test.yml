@@ -1,0 +1,67 @@
+name: Test Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  check-tests:
+    runs-on: self-hosted # Use your self-hosted runner
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check for test scripts
+        run: |
+          if [ -z "$(ls tests/*.py 2>/dev/null)" ]; then
+            echo "No test scripts found."
+            echo "No test scripts found." > napaka.txt
+            exit 1
+          else
+            echo "Test scripts found."
+          fi
+
+      - name: Upload napaka.txt artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: napaka
+          path: napaka.txt
+        if: failure()
+
+  run-tests:
+    runs-on: self-hosted # Use your self-hosted runner
+    needs: check-tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download napaka.txt artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: napaka
+
+      - name: Check napaka.txt
+        run: |
+          if [ -s napaka.txt ]; then
+            echo "napaka.txt contains errors. Cancelling test run."
+            exit 1
+          else
+            echo "napaka.txt is empty. Proceeding with tests."
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9' # Or your python version
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt #or any other dependency file
+
+      - name: Run tests
+        run: python -m unittest discover tests #adjust to your testing framework
+        env:
+          TEST_VAR: "test_value"
+    strategy: #move strategy here.
+      matrix:
+        os: [ubuntu-latest, windows-latest] #example matrix
