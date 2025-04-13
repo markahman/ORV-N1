@@ -1,24 +1,24 @@
-name: Deploy to Docker Hub
+name: Deploy to Docker Hub # Ime poteka dela
 
 on:
   workflow_run:
-    workflows: ["Test Workflow"]
+    workflows: ["Test Workflow"] # Sproži ob uspešnem zaključku Test Workflow
     types:
       - completed
 
 jobs:
-  deploy:
-    runs-on: self-hosted
+  deploy: # Posel za namestitev aplikacije v Docker zabojnik in objavo na DockerHub
+    runs-on: self-hosted # Teče na samostojnem runnerju
     needs: []
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} # Teče samo, če je Test Workflow uspešen
     steps:
-      - name: Checkout code
+      - name: Checkout code # Prenos kode
         uses: actions/checkout@v3
 
-      - name: Login to Docker Hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to Docker Hub # Prijava v Docker Hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} # Prijava s skrivnostmi
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image # Izgradnja in objava Docker slike
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/skin-detector:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/skin-detector:latest
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/skin-detector:latest . # Izgradnja slike
+          docker push ${{ secrets.DOCKER_USERNAME }}/skin-detector:latest # Objava slike

@@ -1,54 +1,54 @@
-name: Test Workflow
+name: Test Workflow # Ime poteka dela
 
 on:
   push:
     branches:
-      - main
+      - main # Sproži ob potisku na main vejo
 
 jobs:
-  check-tests:
-    runs-on: self-hosted
+  check-tests: # Posel za preverjanje testnih skript
+    runs-on: self-hosted # Teče na samostojnem runnerju
     steps:
-      - name: Checkout code
+      - name: Checkout code # Prenos kode
         uses: actions/checkout@v3
 
-      - name: Check for test scripts
+      - name: Check for test scripts # Preveri prisotnost testnih skript
         run: |
-          if [ -z "$(ls tests/*.py 2>/dev/null)" ]; then
-            echo "No test scripts found."
-            echo "No test scripts found." > napaka.txt
-            exit 1
+          if [ -z "$(ls tests/*.py 2>/dev/null)" ]; then # Preveri, če obstajajo testne skripte
+            echo "No test scripts found." # Izpiše sporočilo o odsotnosti testnih skript
+            echo "No test scripts found." > napaka.txt # Zapiše sporočilo v napaka.txt
+            exit 1 # Konča posel z napako
           else
-            echo "Test scripts found."
+            echo "Test scripts found." # Izpiše sporočilo o prisotnosti testnih skript
           fi
 
-      - name: Upload napaka.txt artifact
+      - name: Upload napaka.txt artifact # Naloži napaka.txt kot artefakt
         uses: actions/upload-artifact@v4
         with:
           name: napaka
           path: napaka.txt
-        if: failure()
+        if: failure() # Naloži samo, če je posel neuspešen
 
-  run-tests:
-    runs-on: self-hosted
-    needs: check-tests
+  run-tests: # Posel za izvajanje testov
+    runs-on: self-hosted # Teče na samostojnem runnerju
+    needs: check-tests # Odvisen od uspešnosti check-tests
     steps:
-      - name: Checkout code
+      - name: Checkout code # Prenos kode
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: Set up Python # Nastavitev Pythona
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.9' # Uporabi Python 3.9
 
-      - name: Install dependencies
-        run: pip install numpy opencv-python
+      - name: Install dependencies # Namestitev odvisnosti
+        run: pip install numpy opencv-python # Namesti numpy in opencv-python
 
-      - name: Run tests
-        run: python -m unittest discover tests
+      - name: Run tests # Izvajanje testov
+        run: python -m unittest discover tests # Izvede unittest teste
         env:
-          TEST_VAR: "test_value"
-    strategy:
+          TEST_VAR: "test_value" # Nastavi okoljsko spremenljivko
+    strategy: # Matrika za testiranje na različnih operacijskih sistemih in različicah Pythona
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        python-version: ["3.8", "3.9", "3.10"]
+        os: [ubuntu-latest, windows-latest] # Testira na Ubuntu in Windows
+        python-version: ["3.8", "3.9", "3.10"] # Testira z Python 3.8, 3.9 in 3.10
