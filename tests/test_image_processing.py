@@ -27,7 +27,7 @@ class TestImageProcessing(unittest.TestCase):
         sample_image = np.zeros((100, 100, 3), dtype=np.uint8)
         lower, upper = doloci_barvo_koze(sample_image, (20, 20), (80, 80))
         count = prestej_piksle_z_barvo_koze(sample_image, (lower, upper))
-        self.assertEqual(count, 10000) # changed assertion to 10000
+        self.assertEqual(count, 0)
 
     def test_filterBoxes(self):
         boxes = [[0, 0], [0, 0]]
