@@ -7,7 +7,7 @@ on:
 
 jobs:
   check-tests:
-    runs-on: self-hosted # Use your self-hosted runner
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -30,7 +30,7 @@ jobs:
         if: failure()
 
   run-tests:
-    runs-on: self-hosted # Use your self-hosted runner
+    runs-on: self-hosted
     needs: check-tests
     steps:
       - name: Checkout code
@@ -40,7 +40,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: napaka
-        continue-on-error: true #add this line
+        continue-on-error: true
 
       - name: Check napaka.txt
         run: |
@@ -52,21 +52,22 @@ jobs:
               echo "napaka.txt is empty. Proceeding with tests."
             fi
           else
-            echo "napaka.txt artifact not found. Proceeding with tests." #add this line
+            echo "napaka.txt artifact not found. Proceeding with tests."
           fi
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9' # Or your python version
+          python-version: '3.9'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt #or any other dependency file
+        run: pip install numpy opencv-python
 
       - name: Run tests
-        run: python -m unittest discover tests #adjust to your testing framework
+        run: python -m unittest discover tests
         env:
           TEST_VAR: "test_value"
-    strategy: #correct location of strategy.
+    strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest] #example matrix
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.8", "3.9", "3.10"]
