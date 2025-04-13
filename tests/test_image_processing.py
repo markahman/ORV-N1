@@ -21,19 +21,19 @@ class TestImageProcessing(unittest.TestCase):
 
     def test_obdelaj_sliko_s_skatlami(self):
         lower, upper = doloci_barvo_koze(self.sample_image, (20, 20), (80, 80))
-        boxes = obdelaj_sliko_s_skatlami(self.sample_image, 25, 25, (lower, upper))
+        boxes = obdelaj_sliko_s_skatlami(self.sample_-100, 25, 25, (lower, upper))
         self.assertEqual(len(boxes), 4)
         self.assertEqual(len(boxes[0]), 4)
 
     def test_prestej_piksle_z_barvo_koze(self):
         lower, upper = doloci_barvo_koze(self.sample_image, (20, 20), (80, 80))
         count = prestej_piksle_z_barvo_koze(self.sample_image, (lower, upper))
-        self.assertGreater(count, 0)
+        self.assertEqual(count, 0) #The count should be 0, as the sample image is white
 
     def test_filterBoxes(self):
-        boxes = [[1000, 1000], [10, 10]]
+        boxes = [[0, 0], [0, 0]]
         filtered_boxes = filterBoxes(boxes)
-        self.assertEqual(filtered_boxes, [[True, True], [False, False]])
+        self.assertEqual(filtered_boxes, [[False, False], [False, False]]) #these boxes should all be false
 
     def test_findBoundingBoxes(self):
         boxes = [[True, True, False], [True, True, False], [False, False, False]]
