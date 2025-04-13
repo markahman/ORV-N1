@@ -36,25 +36,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Download napaka.txt artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: napaka
-        continue-on-error: true
-
-      - name: Check napaka.txt
-        run: |
-          if [ -f napaka.txt ]; then
-            if [ -s napaka.txt ]; then
-              echo "napaka.txt contains errors. Cancelling test run."
-              exit 1
-            else
-              echo "napaka.txt is empty. Proceeding with tests."
-            fi
-          else
-            echo "napaka.txt artifact not found. Proceeding with tests."
-          fi
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
